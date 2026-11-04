@@ -1,0 +1,25 @@
+# banco local e dados reais da loja (contêm dados pessoais de clientes)
+*.sqlite3
+*.sqlite3-journal
+*.xls
+*.xlsx
+*.pdf
+dados_reais/
+
+# python / django
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+staticfiles/
+media/
+
+# segredos e vercel
+.env
+.env.*
+.vercel/
+
+# ferramentas locais
+.claude/
+.idea/
+.vscode/

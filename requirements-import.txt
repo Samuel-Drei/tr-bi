@@ -1,0 +1,6 @@
+# Só necessário na máquina que roda `manage.py importar` (não vai para a Vercel).
+-r requirements.txt
+pandas
+openpyxl
+lxml
+pdfplumber

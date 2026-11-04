@@ -1,0 +1,240 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TR Motors · Painel</title>
+<link rel="icon" href="{% static 'dados/logo-tr.png' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'dados/painel.css' %}">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side">
+    <div class="brand">
+      <img class="logo" src="{% static 'dados/logo-tr.png' %}" alt="TR Motors"><b>TR Motors</b>
+      <span class="col"><i data-lucide="chevrons-left" style="width:16px;height:16px"></i></span>
+    </div>
+    <nav>
+      <a class="off" href="#" title="Em breve"><i data-lucide="house"></i>Início</a>
+      <a class="on" href="/"><i data-lucide="layout-dashboard"></i>Painel</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="arrow-left-right"></i>Vendas</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="car"></i>Estoque</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="chart-column"></i>Análises</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="landmark"></i>Financeiro</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="target"></i>Metas</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="file-text"></i>Relatórios</a>
+      <h6>Negócio</h6>
+      <a class="off" href="#" title="Em breve"><i data-lucide="receipt-text"></i>Notas fiscais</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="circle-user-round"></i>Clientes</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="users"></i>Equipe</a>
+      <h6>Configurações</h6>
+      <a class="off" href="/admin/" title="Administração"><i data-lucide="settings"></i>Configurações</a>
+      <a class="off" href="#" title="Em breve"><i data-lucide="circle-help"></i>Ajuda e suporte</a>
+    </nav>
+    <div class="upgrade">
+      <div class="gem"><i data-lucide="database" style="width:15px;height:15px"></i></div>
+      <b>Atualizar dados</b>
+      <p>Importe os relatórios do Revenda Mais para manter o painel em dia.</p>
+      <a href="/admin/dados/importacao/">Importar relatórios →</a>
+      <small>Última importação: {{ ultima_importacao }}</small>
+    </div>
+  </aside>
+
+  <!-- ============ CONTEÚDO ============ -->
+  <div class="main">
+    <header class="top">
+      <label class="search"><i data-lucide="search" style="width:16px;height:16px"></i>
+        <input placeholder="Buscar veículos, clientes, vendedores…"><kbd>⌘ K</kbd></label>
+      <div class="sp"></div>
+      <span class="bell"><i data-lucide="bell" style="width:20px;height:20px"></i><i>{{ saude.parados }}</i></span>
+      <div class="user"><img class="avatar" src="{% static 'dados/logo-tr.png' %}" alt="TR">
+        <div><b>TR Motors</b><small>Primavera do Leste · MT</small></div>
+        <i data-lucide="chevron-down" style="width:15px;height:15px;color:#9a927f"></i></div>
+    </header>
+
+    <section class="hello">
+      <div>
+        <small class="saud"><img src="{% static 'dados/logo-tr.png' %}" alt="">{{ saudacao }}, TR Motors 👋</small>
+        <h1>Aqui está o resumo da sua revenda</h1>
+        <p>Acompanhe vendas, estoque e desempenho da equipe em um só lugar.</p>
+      </div>
+      <div class="sp"></div>
+      <div class="tools">
+        <form class="datebtn" method="get">
+          <i data-lucide="calendar" style="width:16px;height:16px"></i>
+          <select name="p" onchange="this.form.submit()">
+            {% for k, v in periodos %}<option value="{{ k }}"{% if k == periodo %} selected{% endif %}>{{ v }} · {% if k == periodo %}{{ periodo_txt }}{% else %}…{% endif %}</option>{% endfor %}
+          </select>
+        </form>
+        <span class="ibtn"><i data-lucide="download" style="width:18px;height:18px"></i></span>
+        <span class="ibtn"><i data-lucide="share-2" style="width:18px;height:18px"></i></span>
+        <span class="ibtn"><i data-lucide="chart-no-axes-combined" style="width:18px;height:18px"></i></span>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="grid g4">
+      {% for k in kpis %}
+      <article class="card kpi">
+        <div class="head"><span class="ico {{ k.tom }}"><i data-lucide="{{ k.icone }}"></i></span>{{ k.nome }}
+          <span class="dots"><i data-lucide="ellipsis-vertical" style="width:16px;height:16px"></i></span></div>
+        <div class="val">{{ k.valor }}</div>
+        <div class="foot">
+          {% if k.chip %}<span class="chip neu">{{ k.chip }}</span><span>{{ k.sub }}</span>
+          {% elif k.delta is not None %}<span class="chip {% if k.bom %}up{% else %}down{% endif %}">{{ k.seta }} {{ k.abs|floatformat:1 }}%</span><span>vs período anterior</span>
+          {% else %}<span>sem período anterior</span>{% endif %}
+          <svg class="spark" data-serie="{{ k.serie|join:',' }}" data-cor="{{ k.cor }}"></svg>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+
+    <!-- Visão geral + saúde -->
+    <section class="grid g2">
+      <article class="card">
+        <div class="rowh">
+          <div><h3>Visão geral financeira</h3>
+            <div class="sub">Receita vs custo das vendas com nota fiscal (por mês)</div></div>
+          <div class="sp"></div>
+          <div class="seg" id="seg"><button class="on" data-n="6">6M</button><button data-n="12">1A</button><button data-n="99">Tudo</button></div>
+        </div>
+        <div class="legend"><span><i style="background:#f5a623"></i>Receita</span><span><i style="background:#1f2937"></i>Custo</span></div>
+        <div id="chart"></div>
+        <div class="nota">Considera apenas vendas com nota emitida no período: {{ cobertura }} vendas ({{ total_vendas }} no total segundo o relatório por vendedor).</div>
+      </article>
+
+      <article class="card">
+        <div class="rowh"><span class="ico indigo" style="width:26px;height:26px"><i data-lucide="shield-check" style="width:14px;height:14px"></i></span>
+          <h3 style="margin-top:3px">Saúde do estoque</h3><div class="sp"></div>
+          <span class="badge {% if saude.selo == 'Atenção' %}med{% elif saude.selo == 'Crítico' %}bad{% endif %}">● {{ saude.selo }}</span></div>
+        <div class="hl">
+          <div class="ring">
+            <svg width="132" height="132" viewBox="0 0 132 132"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5a623"/><stop offset="1" stop-color="#ffd166"/></linearGradient></defs>
+              <circle cx="66" cy="66" r="56" fill="none" stroke="#f6eedc" stroke-width="12"/>
+              <circle cx="66" cy="66" r="56" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" id="arc"/></svg>
+            <div><b>{{ saude.score }}%</b><small>Nota geral</small></div>
+          </div>
+          <div class="comp">{% for n, v in saude.comp %}<div>{{ n }}<b>{{ v }}%</b></div>{% endfor %}</div>
+        </div>
+        <div class="tip {% if saude.selo == 'Atenção' %}med{% elif saude.selo == 'Crítico' %}bad{% endif %}">
+          <i data-lucide="lightbulb" style="width:18px;height:18px;flex:none"></i>
+          <div><b>{% if saude.parados %}Atenção ao estoque parado{% else %}Estoque em dia!{% endif %}</b>
+            <p>{% if saude.parados %}{{ saude.parados }} veículos estão há mais de 90 dias na loja, somando {{ saude.parados_valor }} em custo.{% else %}Nenhum veículo parado há mais de 90 dias.{% endif %}
+            Posição de {{ data_estoque }}.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Vendedores + composição + movimentações -->
+    <section class="grid g3">
+      <article class="card">
+        <div class="rowh"><span class="ico indigo" style="width:30px;height:30px"><i data-lucide="users" style="width:15px;height:15px"></i></span>
+          <h3 style="margin-top:5px">Desempenho por vendedor</h3></div>
+        <table>
+          <thead><tr><th>Vendedor</th><th>Vendas</th><th>Participação</th><th>Tendência</th><th>No ano</th></tr></thead>
+          <tbody>
+          {% for v in vendedores %}
+          <tr>
+            <td class="n"><span class="mini" style="background:#fff3d9;color:#d98a00"><i data-lucide="user" style="width:14px;height:14px"></i></span>{{ v.nome }}</td>
+            <td><b>{{ v.atual }}</b> <span class="{% if v.delta >= 0 %}up{% else %}down{% endif %}">{% if v.delta >= 0 %}↑{% else %}↓{% endif %} {% if v.delta < 0 %}{{ v.delta|cut:'-' }}{% else %}{{ v.delta }}{% endif %}</span></td>
+            <td><div class="bar">({{ v.part }}%)<u><i style="width:{{ v.part }}%"></i></u></div></td>
+            <td><svg class="sp2" data-serie="{{ v.serie|join:',' }}" data-cor="#16c79a"></svg></td>
+            <td><b>{{ v.ano }}</b></td>
+          </tr>
+          {% empty %}<tr><td colspan="5" style="color:#9a927f">Sem vendas no período.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </article>
+
+      <article class="card">
+        <div class="rowh"><span class="ico indigo" style="width:30px;height:30px"><i data-lucide="chart-pie" style="width:15px;height:15px"></i></span>
+          <h3 style="margin-top:5px">Composição das vendas</h3><span class="link" style="color:#b4bad0"><i data-lucide="ellipsis" style="width:16px;height:16px"></i></span></div>
+        <div class="tabs" id="tabs"></div>
+        <div class="donut">
+          <div class="dwrap"><div id="pie"></div><div class="c"><b id="ptot"></b><small>Total de vendas</small></div></div>
+          <div class="dleg" id="dleg"></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="rowh"><h3>Últimas movimentações</h3><a class="link" href="#">Ver todas →</a></div>
+        {% for m in mov %}
+        <div class="tr{% if forloop.first %} first{% endif %}">
+          <span class="mini" style="background:{% if m.tipo == 'pos' %}#e7f9f3;color:#16c79a{% else %}#fdecec;color:#ef4444{% endif %}"><i data-lucide="{% if m.tipo == 'pos' %}circle-dollar-sign{% else %}shopping-cart{% endif %}" style="width:16px;height:16px"></i></span>
+          <div><b>{{ m.titulo }}</b><small>{{ m.sub }}</small></div>
+          <div class="r"><b class="{{ m.tipo }}">{{ m.valor }}</b><small>{{ m.data }}</small></div>
+        </div>
+        {% endfor %}
+      </article>
+    </section>
+  </div>
+</div>
+
+{{ grafico|json_script:"d-grafico" }}
+{{ abas|json_script:"d-abas" }}
+<script>
+lucide.createIcons();
+
+/* mini gráficos de linha com área */
+function spark(svg){
+  const v=svg.dataset.serie.split(',').map(Number), cor=svg.dataset.cor;
+  const w=112,h=svg.classList.contains('sp2')?24:42; svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  const mx=Math.max(...v),mn=Math.min(...v),r=(mx-mn)||1,p=3;
+  const pts=v.map((y,i)=>[i*(w/(v.length-1||1)),h-p-((y-mn)/r)*(h-2*p)]);
+  const d=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+  const id='s'+Math.random().toString(36).slice(2);
+  svg.innerHTML=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity=".28"/><stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient></defs>
+  <path d="${d} L${w} ${h} L0 ${h}Z" fill="url(#${id})"/><path d="${d}" fill="none" stroke="${cor}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+document.querySelectorAll('svg[data-serie]').forEach(spark);
+
+/* anel da nota de saúde */
+(function(){const c=2*Math.PI*56,s={{ saude.score }}/100,a=document.getElementById('arc');
+  a.setAttribute('stroke-dasharray',`${c*s} ${c}`);})();
+
+/* gráfico de área: receita x custo */
+const G=JSON.parse(document.getElementById('d-grafico').textContent);
+const ch=echarts.init(document.getElementById('chart'));
+const brl=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const eixo=v=>v>=1e6?'R$ '+(v/1e6).toFixed(1).replace('.',',')+' mi':v>=1e3?'R$ '+Math.round(v/1e3)+' mil':'R$ 0';
+function desenha(n){
+  const i=Math.max(0,G.labels.length-n), L=G.labels.slice(i), R=G.receita.slice(i), C=G.custo.slice(i);
+  const serie=(nome,dados,cor,al='66')=>({name:nome,type:'line',smooth:.35,data:dados,symbol:'circle',symbolSize:7,showSymbol:true,
+    lineStyle:{width:2,color:cor},itemStyle:{color:cor,borderColor:'#fff',borderWidth:1.5},
+    areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:cor+al},{offset:1,color:cor+'04'}])}});
+  ch.setOption({grid:{left:54,right:14,top:14,bottom:26},
+    tooltip:{trigger:'axis',backgroundColor:'#17140f',borderWidth:0,padding:[10,14],textStyle:{color:'#fff',fontSize:12},
+      axisPointer:{type:'line',lineStyle:{color:'#d8d0bd',type:'dashed'}},
+      formatter:p=>`<div style="color:#9aa3c7;margin-bottom:6px">${p[0].axisValue}</div>`+p.map(s=>`<div style="display:flex;gap:18px;justify-content:space-between"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${s.color};margin-right:7px"></i>${s.seriesName}</span><b>${brl(s.value)}</b></div>`).join('')},
+    xAxis:{type:'category',data:L,boundaryGap:false,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#9a927f',fontSize:11}},
+    yAxis:{type:'value',axisLabel:{color:'#8a93b2',fontSize:11,formatter:eixo},splitLine:{lineStyle:{color:'#f1ece0'}}},
+    series:[serie('Receita',R,'#f5a623'),serie('Custo',C,'#1f2937','1c')]});
+}
+desenha(6);
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');desenha(+b.dataset.n);});
+
+/* rosca com abas */
+const A=JSON.parse(document.getElementById('d-abas').textContent);
+const pie=echarts.init(document.getElementById('pie'));
+function rosca(k){
+  const a=A[k];
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
+  document.getElementById('ptot').textContent=a.total;
+  document.getElementById('dleg').innerHTML=a.itens.map(i=>`<div><i style="background:${i.cor}"></i>${i.nome}<span>${i.pct}%</span><em>${i.valor}</em></div>`).join('')||'<div>Sem dados</div>';
+  pie.setOption({series:[{type:'pie',radius:['66%','92%'],avoidLabelOverlap:false,label:{show:false},
+    itemStyle:{borderColor:'#fff',borderWidth:3,borderRadius:6},data:a.itens.map(i=>({name:i.nome,value:i.valor,itemStyle:{color:i.cor}}))}]},true);
+}
+document.getElementById('tabs').innerHTML=Object.keys(A).map(k=>`<button data-k="${k}">${A[k].titulo}</button>`).join('');
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>rosca(b.dataset.k));
+rosca(Object.keys(A)[0]);
+addEventListener('resize',()=>{ch.resize();pie.resize();});
+</script>
+</body>
+</html>
