@@ -1,0 +1,33 @@
+# Blueprint do Render: New → Blueprint → aponte para este repositório.
+databases:
+  - name: painel-db
+    plan: free
+
+services:
+  - type: web
+    name: painel
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate --noinput && python manage.py preparar && gunicorn config.wsgi:application --workers 2 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL
+        fromDatabase:
+          name: painel-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: LOJA_NOME
+        value: TR Motors
+      - key: LOJA_LOCAL
+        value: Primavera do Leste · MT
+      # Usuário administrador criado no primeiro deploy (troque a senha depois):
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false   # o Render pede o valor na criação
+      # 1 = carrega a loja fictícia de demonstração se o banco estiver vazio; 0 = banco limpo para dados reais
+      - key: SEED_DEMO
+        value: "1"

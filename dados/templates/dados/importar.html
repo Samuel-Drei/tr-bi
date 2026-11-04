@@ -1,0 +1,37 @@
+{% extends "dados/base.html" %}
+{% block titulo %}Importar dados{% endblock %}
+{% block conteudo %}
+<section class="hello"><div><h1>Importar dados</h1><p>Envie os relatórios exportados do Revenda Mais. O tipo é reconhecido pelo nome do arquivo.</p></div></section>
+
+<div class="cols2">
+  <article class="card">
+    <h3>Enviar arquivos</h3>
+    <form method="post" enctype="multipart/form-data" style="margin-top:14px">{% csrf_token %}
+      <div class="drop"><i data-lucide="file-up" style="width:30px;height:30px;color:#f5a623"></i>
+        <p style="margin-top:8px">Selecione um ou mais arquivos <b>.xls, .xlsx ou .pdf</b></p>
+        <input type="file" name="arquivos" multiple accept=".xls,.xlsx,.pdf" required></div>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12.5px"><input type="checkbox" name="forcar"> Reimportar mesmo que o arquivo já tenha sido enviado</label>
+      <button class="btn" style="margin-top:14px" type="submit"><i data-lucide="upload" style="width:15px;height:15px"></i>Importar</button>
+    </form>
+    {% if resultados %}<div style="margin-top:18px"><h3 style="margin-bottom:6px">Resultado</h3>
+      {% for r in resultados %}<div class="res"><span class="{{ r.cls }}">{{ r.icone }}</span><div><b>{{ r.arquivo }}</b><br><small style="color:#9a927f">{{ r.msg }}</small></div></div>{% endfor %}</div>{% endif %}
+  </article>
+
+  <article class="card">
+    <h3>Relatórios aceitos</h3>
+    <table style="margin-top:8px"><tbody>
+      {% for nome, desc in aceitos %}<tr><td><b>{{ nome }}</b><br><small style="color:#9a927f">{{ desc }}</small></td></tr>{% endfor %}
+    </tbody></table>
+    <p class="nota" style="margin-top:12px">Pode reimportar relatórios de períodos novos: o período do arquivo é substituído, sem duplicar dados.</p>
+  </article>
+</div>
+
+<article class="card tabela" style="margin-top:16px">
+  <h3 style="margin-bottom:8px">Histórico de importações</h3>
+  <table><thead><tr><th>Quando</th><th>Arquivo</th><th>Tipo</th><th class="r">Linhas</th><th>Período</th></tr></thead><tbody>
+  {% for i in historico %}<tr><td>{{ i.criado_em|date:"d/m/Y H:i" }}</td><td>{{ i.arquivo }}</td><td>{{ i.tipo }}</td><td class="r">{{ i.linhas }}</td>
+    <td>{% if i.periodo_ini %}{{ i.periodo_ini|date:"d/m/Y" }} – {{ i.periodo_fim|date:"d/m/Y" }}{% else %}—{% endif %}</td></tr>
+  {% empty %}<tr><td class="vazio" colspan="5">Nenhuma importação ainda.</td></tr>{% endfor %}
+  </tbody></table>
+</article>
+{% endblock %}

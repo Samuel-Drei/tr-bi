@@ -1,0 +1,20 @@
+{% extends "dados/base.html" %}
+{% block titulo %}Busca{% endblock %}
+{% block conteudo %}
+<section class="hello"><div><h1>Busca</h1><p>{% if q %}Resultados para “{{ q }}”{% else %}Digite uma placa, modelo, cliente ou vendedor na barra acima.{% endif %}</p></div></section>
+{% if q %}
+<div class="cols2">
+  <article class="card tabela"><h3 style="margin-bottom:8px">Veículos ({{ veiculos|length }})</h3>
+    <table><tbody>{% for v in veiculos %}<tr><td><b>{{ v.modelo }}</b><br><small style="color:#9a927f">{{ v.placa }} · {{ v.ano_mod|default:"—" }} · {{ v.tipo }}</small></td>
+      <td class="r"><span class="{% if v.situacao == "Estoque" %}c-warn{% elif v.situacao == "Vendido" %}c-ok{% endif %}">{{ v.situacao }}</span><br><small style="color:#9a927f">{% if v.dt_venda %}{{ v.dt_venda|date:"d/m/Y" }}{% else %}comprado {{ v.dt_compra|date:"d/m/Y" }}{% endif %}</small></td></tr>
+      {% empty %}<tr><td class="vazio">Nenhum veículo.</td></tr>{% endfor %}</tbody></table></article>
+  <article class="card tabela"><h3 style="margin-bottom:8px">Clientes ({{ clientes|length }})</h3>
+    <table><tbody>{% for c in clientes %}<tr><td><b>{{ c.nome }}</b><br><small style="color:#9a927f">{{ c.cidade }}{% if c.estado %}/{{ c.estado }}{% endif %} · {{ c.grupos }}</small></td>
+      <td class="r">{{ c.qtd_veiculos_comprados }} veíc.</td></tr>
+      {% empty %}<tr><td class="vazio">Nenhum cliente.</td></tr>{% endfor %}</tbody></table></article>
+  <article class="card tabela"><h3 style="margin-bottom:8px">Vendedores ({{ vendedores|length }})</h3>
+    <table><tbody>{% for v in vendedores %}<tr><td><b>{{ v.0 }}</b></td><td class="r">{{ v.1 }} vendas</td></tr>
+      {% empty %}<tr><td class="vazio">Nenhum vendedor.</td></tr>{% endfor %}</tbody></table></article>
+</div>
+{% endif %}
+{% endblock %}

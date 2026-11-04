@@ -26,17 +26,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # Em produção (Vercel) defina DJANGO_SECRET_KEY nas variáveis de ambiente do projeto.
 NA_VERCEL = bool(os.environ.get("VERCEL"))
-DEBUG = os.environ.get("DJANGO_DEBUG", "0" if NA_VERCEL else "1") == "1"
-
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
+# Local (sem chave definida) roda em modo debug; qualquer host com chave definida roda em produção.
+DEBUG = os.environ.get("DJANGO_DEBUG", "0" if (SECRET_KEY or NA_VERCEL) else "1") == "1"
 if not SECRET_KEY:
     if not DEBUG:
         raise ImproperlyConfigured("Defina a variável de ambiente DJANGO_SECRET_KEY.")
     SECRET_KEY = "dev-only-nao-usar-em-producao"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".vercel.app"] + [
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".vercel.app", ".onrender.com", ".up.railway.app",
+                 ".fly.dev", ".koyeb.app", ".herokuapp.com"] + [
     h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
-CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app"] + [
+CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app", "https://*.onrender.com", "https://*.up.railway.app",
+                        "https://*.fly.dev", "https://*.koyeb.app", "https://*.herokuapp.com"] + [
     o.strip() for o in os.environ.get("DJANGO_CSRF_ORIGINS", "").split(",") if o.strip()]
 
 if not DEBUG:
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dados.context.loja',
             ],
         },
     },
@@ -150,7 +154,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # a Vercel roda collectstatic e serve pela CDN
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # collectstatic (Vercel serve pela CDN; demais hosts via WhiteNoise)
+if not DEBUG:
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    }
+
+# Identidade da loja exibida no painel (troque por variável de ambiente em cada instalação).
+LOJA_NOME = os.environ.get("LOJA_NOME", "TR Motors")
+LOJA_LOCAL = os.environ.get("LOJA_LOCAL", "Primavera do Leste · MT")
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'

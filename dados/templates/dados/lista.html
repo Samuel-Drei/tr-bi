@@ -1,0 +1,63 @@
+{% extends "dados/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<section class="hello">
+  <div><h1>{{ titulo }}</h1><p>{{ sub }}</p></div>
+  <div class="sp"></div>
+  {% if acao %}<a class="btn" href="{{ acao.url }}">{{ acao.texto }}</a>{% endif %}
+</section>
+
+{% if filtros %}
+<form class="filtros" method="get">
+  {% if filtros.periodo %}
+  <select name="p" onchange="this.form.submit()">
+    {% for k, v in periodos %}<option value="{{ k }}"{% if k == p %} selected{% endif %}>{{ v }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  {% for s in filtros.selects %}
+  <select name="{{ s.nome }}" onchange="this.form.submit()">
+    {% for v, t in s.opcoes %}<option value="{{ v }}"{% if v == s.atual %} selected{% endif %}>{{ t }}</option>{% endfor %}
+  </select>
+  {% endfor %}
+  {% if filtros.busca %}<input type="search" name="q" value="{{ q }}" placeholder="{{ filtros.busca }}">
+  <button class="btn sec" type="submit"><i data-lucide="search" style="width:15px;height:15px"></i>Filtrar</button>{% endif %}
+  {% if csv_url %}<a class="btn sec" href="{{ csv_url }}" style="margin-left:auto"><i data-lucide="download" style="width:15px;height:15px"></i>Exportar CSV</a>{% endif %}
+</form>
+{% endif %}
+
+{% if kpis %}<div class="mk">{% for k in kpis %}<div class="card"><small>{{ k.0 }}</small><b>{{ k.1 }}</b>{% if k.2 %}<em>{{ k.2 }}</em>{% endif %}</div>{% endfor %}</div>{% endif %}
+
+{% if grafico %}
+<article class="card" style="margin-bottom:16px"><h3>{{ grafico.titulo }}</h3><div id="g" style="height:260px;margin-top:8px"></div></article>
+{% endif %}
+
+<article class="card tabela">
+  <table>
+    <thead><tr>{% for c in cols %}<th class="{{ c.1 }}">{{ c.0 }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in rows %}<tr>{% for c in row %}<td class="{{ c.1 }}">{{ c.0 }}</td>{% endfor %}</tr>
+    {% empty %}<tr><td class="vazio" colspan="{{ cols|length }}">{{ vazio|default:"Nada encontrado para este filtro." }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% if pagina.paginator.num_pages > 1 %}
+  <div class="pag">
+    <span>{{ pagina.paginator.count }} registros · página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+    <span>{% if pagina.has_previous %}<a href="?{{ qs }}&pg={{ pagina.previous_page_number }}">← Anterior</a>{% endif %}
+    {% if pagina.has_next %}<a href="?{{ qs }}&pg={{ pagina.next_page_number }}">Próxima →</a>{% endif %}</span>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}
+{% block scripts %}
+{% if grafico %}{{ grafico|json_script:"d-g" }}
+<script>
+const G=JSON.parse(document.getElementById("d-g").textContent), c=echarts.init(document.getElementById("g"));
+const fmt=v=>Math.abs(v)>=1e6?(v/1e6).toFixed(2).replace(".",",")+" mi":Math.abs(v)>=1e3?Math.round(v/1e3)+" mil":v;
+c.setOption({grid:{left:54,right:10,top:10,bottom:26},tooltip:{trigger:"axis",backgroundColor:"#17140f",borderWidth:0,textStyle:{color:"#fff",fontSize:12},
+  valueFormatter:v=>"R$ "+Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2})},
+  xAxis:{type:"category",data:G.labels,axisLine:{show:false},axisTick:{show:false},axisLabel:{color:"#9a927f"}},
+  yAxis:{type:"value",axisLabel:{color:"#9a927f",formatter:fmt},splitLine:{lineStyle:{color:"#f1ece0"}}},
+  series:[{type:"bar",data:G.valores,barMaxWidth:34,itemStyle:{borderRadius:[6,6,0,0],color:"#f5a623"}}]});
+addEventListener("resize",()=>c.resize());
+</script>{% endif %}
+{% endblock %}

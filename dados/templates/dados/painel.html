@@ -1,66 +1,10 @@
-{% load static %}<!doctype html>
-<html lang="pt-br">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TR Motors · Painel</title>
-<link rel="icon" href="{% static 'dados/logo-tr.png' %}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'dados/painel.css' %}">
-<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
-</head>
-<body>
-<div class="app">
-
-  <!-- ============ SIDEBAR ============ -->
-  <aside class="side">
-    <div class="brand">
-      <img class="logo" src="{% static 'dados/logo-tr.png' %}" alt="TR Motors"><b>TR Motors</b>
-      <span class="col"><i data-lucide="chevrons-left" style="width:16px;height:16px"></i></span>
-    </div>
-    <nav>
-      <a class="off" href="#" title="Em breve"><i data-lucide="house"></i>Início</a>
-      <a class="on" href="/"><i data-lucide="layout-dashboard"></i>Painel</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="arrow-left-right"></i>Vendas</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="car"></i>Estoque</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="chart-column"></i>Análises</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="landmark"></i>Financeiro</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="target"></i>Metas</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="file-text"></i>Relatórios</a>
-      <h6>Negócio</h6>
-      <a class="off" href="#" title="Em breve"><i data-lucide="receipt-text"></i>Notas fiscais</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="circle-user-round"></i>Clientes</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="users"></i>Equipe</a>
-      <h6>Configurações</h6>
-      <a class="off" href="/admin/" title="Administração"><i data-lucide="settings"></i>Configurações</a>
-      <a class="off" href="#" title="Em breve"><i data-lucide="circle-help"></i>Ajuda e suporte</a>
-    </nav>
-    <div class="upgrade">
-      <div class="gem"><i data-lucide="database" style="width:15px;height:15px"></i></div>
-      <b>Atualizar dados</b>
-      <p>Importe os relatórios do Revenda Mais para manter o painel em dia.</p>
-      <a href="/admin/dados/importacao/">Importar relatórios →</a>
-      <small>Última importação: {{ ultima_importacao }}</small>
-    </div>
-  </aside>
-
-  <!-- ============ CONTEÚDO ============ -->
-  <div class="main">
-    <header class="top">
-      <label class="search"><i data-lucide="search" style="width:16px;height:16px"></i>
-        <input placeholder="Buscar veículos, clientes, vendedores…"><kbd>⌘ K</kbd></label>
-      <div class="sp"></div>
-      <span class="bell"><i data-lucide="bell" style="width:20px;height:20px"></i><i>{{ saude.parados }}</i></span>
-      <div class="user"><img class="avatar" src="{% static 'dados/logo-tr.png' %}" alt="TR">
-        <div><b>TR Motors</b><small>Primavera do Leste · MT</small></div>
-        <i data-lucide="chevron-down" style="width:15px;height:15px;color:#9a927f"></i></div>
-    </header>
-
+{% extends "dados/base.html" %}
+{% load static %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
     <section class="hello">
       <div>
-        <small class="saud"><img src="{% static 'dados/logo-tr.png' %}" alt="">{{ saudacao }}, TR Motors 👋</small>
+        <small class="saud"><img src="{% static 'dados/logo-tr.png' %}" alt="">{{ saudacao }}, {{ loja_nome }} 👋</small>
         <h1>Aqui está o resumo da sua revenda</h1>
         <p>Acompanhe vendas, estoque e desempenho da equipe em um só lugar.</p>
       </div>
@@ -173,13 +117,11 @@
         {% endfor %}
       </article>
     </section>
-  </div>
-</div>
-
+{% endblock %}
+{% block scripts %}
 {{ grafico|json_script:"d-grafico" }}
 {{ abas|json_script:"d-abas" }}
 <script>
-lucide.createIcons();
 
 /* mini gráficos de linha com área */
 function spark(svg){
@@ -236,5 +178,4 @@ document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>rosca(b.datas
 rosca(Object.keys(A)[0]);
 addEventListener('resize',()=>{ch.resize();pie.resize();});
 </script>
-</body>
-</html>
+{% endblock %}

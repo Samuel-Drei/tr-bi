@@ -1,0 +1,65 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block titulo %}Painel{% endblock %} · {{ loja_nome }}</title>
+<link rel="icon" href="{% static 'dados/logo-tr.png' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'dados/painel.css' %}">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side" id="side">
+    <div class="brand">
+      <img class="logo" src="{% static 'dados/logo-tr.png' %}" alt="{{ loja_nome }}"><b>{{ loja_nome }}</b>
+    </div>
+    <nav>
+      <a class="{% if ativo == 'painel' %}on{% endif %}" href="{% url 'painel' %}"><i data-lucide="layout-dashboard"></i>Painel</a>
+      <a class="{% if ativo == 'vendas' %}on{% endif %}" href="{% url 'vendas' %}"><i data-lucide="arrow-left-right"></i>Vendas</a>
+      <a class="{% if ativo == 'estoque' %}on{% endif %}" href="{% url 'estoque' %}"><i data-lucide="car"></i>Estoque</a>
+      <a class="{% if ativo == 'financeiro' %}on{% endif %}" href="{% url 'financeiro' %}"><i data-lucide="landmark"></i>Financeiro</a>
+      <h6>Negócio</h6>
+      <a class="{% if ativo == 'notas' %}on{% endif %}" href="{% url 'notas' %}"><i data-lucide="receipt-text"></i>Notas fiscais</a>
+      <a class="{% if ativo == 'clientes' %}on{% endif %}" href="{% url 'clientes' %}"><i data-lucide="circle-user-round"></i>Clientes</a>
+      <a class="{% if ativo == 'equipe' %}on{% endif %}" href="{% url 'equipe' %}"><i data-lucide="users"></i>Equipe</a>
+      {% if user.is_staff %}
+      <h6>Sistema</h6>
+      <a class="{% if ativo == 'importar' %}on{% endif %}" href="{% url 'importar' %}"><i data-lucide="upload"></i>Importar dados</a>
+      <a href="/admin/"><i data-lucide="settings"></i>Administração</a>
+      {% endif %}
+    </nav>
+    <div class="upgrade">
+      <div class="gem"><i data-lucide="database" style="width:15px;height:15px"></i></div>
+      <b>Atualizar dados</b>
+      <p>Importe os relatórios do Revenda Mais para manter o painel em dia.</p>
+      {% if user.is_staff %}<a href="{% url 'importar' %}">Importar relatórios →</a>{% endif %}
+      <small>Última importação: {{ ultima_importacao|default:"—" }}</small>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <button class="menu" type="button" aria-label="Menu" onclick="document.getElementById('side').classList.toggle('open')"><i data-lucide="menu" style="width:20px;height:20px"></i></button>
+      <form class="search" action="{% url 'buscar' %}" method="get"><i data-lucide="search" style="width:16px;height:16px"></i>
+        <input name="q" value="{{ q_busca|default:'' }}" placeholder="Buscar placa, modelo, cliente ou vendedor…"></form>
+      <div class="sp"></div>
+      <span class="bell"><i data-lucide="bell" style="width:20px;height:20px"></i>{% if alertas %}<i>{{ alertas }}</i>{% endif %}</span>
+      <div class="user"><img class="avatar" src="{% static 'dados/logo-tr.png' %}" alt="">
+        <div><b>{{ loja_nome }}</b><small>{{ loja_local }}</small></div></div>
+      <form method="post" action="{% url 'logout' %}" style="margin-left:6px">{% csrf_token %}
+        <button class="ibtn" title="Sair" style="border:0;cursor:pointer"><i data-lucide="log-out" style="width:17px;height:17px"></i></button></form>
+    </header>
+
+    {% if messages %}{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}{% endif %}
+    {% block conteudo %}{% endblock %}
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

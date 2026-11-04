@@ -250,3 +250,27 @@ def detectar(nome):
     if "canal de venda" in n:
         return "canal_venda", importar_canal_venda
     return None, None
+
+
+# --------------------------------------------------------------------------- serviço comum
+def importar_arquivo(caminho, nome=None, forcar=False):
+    """Importa um arquivo e registra no histórico. Devolve (status, tipo, linhas).
+
+    status: 'ok' | 'ja_importado' | 'desconhecido'
+    """
+    import hashlib
+    from pathlib import Path
+
+    from .models import Importacao
+
+    nome = nome or Path(caminho).name
+    tipo, fn = detectar(nome)
+    if not fn:
+        return "desconhecido", None, 0
+    h = hashlib.sha256(Path(caminho).read_bytes()).hexdigest()
+    if not forcar and Importacao.objects.filter(sha256=h).exists():
+        return "ja_importado", tipo, 0
+    n, ini, fim = fn(str(caminho))
+    Importacao.objects.update_or_create(
+        sha256=h, defaults=dict(arquivo=nome[:300], tipo=tipo, linhas=n, periodo_ini=ini, periodo_fim=fim))
+    return "ok", tipo, n

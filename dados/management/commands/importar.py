@@ -1,10 +1,8 @@
-import hashlib
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
 
-from dados.importadores import detectar
-from dados.models import Importacao
+from dados.importadores import importar_arquivo
 
 
 class Command(BaseCommand):
@@ -18,17 +16,12 @@ class Command(BaseCommand):
         p = Path(caminho)
         arquivos = sorted(p.iterdir()) if p.is_dir() else [p]
         for f in arquivos:
-            if f.suffix.lower() not in (".xls", ".xlsx", ".pdf") or f.is_dir():
+            if f.is_dir() or f.suffix.lower() not in (".xls", ".xlsx", ".pdf"):
                 continue
-            tipo, fn = detectar(f.name)
-            if not fn:
+            status, tipo, n = importar_arquivo(f, forcar=forcar)
+            if status == "desconhecido":
                 self.stdout.write(f"?  ignorado (tipo desconhecido): {f.name}")
-                continue
-            h = hashlib.sha256(f.read_bytes()).hexdigest()
-            if not forcar and Importacao.objects.filter(sha256=h).exists():
+            elif status == "ja_importado":
                 self.stdout.write(f"=  já importado: {f.name}")
-                continue
-            n, ini, fim = fn(str(f))
-            Importacao.objects.update_or_create(
-                sha256=h, defaults=dict(arquivo=f.name, tipo=tipo, linhas=n, periodo_ini=ini, periodo_fim=fim))
-            self.stdout.write(self.style.SUCCESS(f"+  {tipo}: {n} linhas  ({f.name})"))
+            else:
+                self.stdout.write(self.style.SUCCESS(f"+  {tipo}: {n} linhas  ({f.name})"))

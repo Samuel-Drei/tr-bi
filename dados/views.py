@@ -179,6 +179,7 @@ def painel(request):
     imp = Importacao.objects.order_by("-criado_em").first()
     hora = datetime.now().hour
     ctx = {
+        "ativo": "painel", "alertas": len(parados) or None,
         "saudacao": "Bom dia" if hora < 12 else "Boa tarde" if hora < 18 else "Boa noite",
         "periodo": p, "periodos": [(k, v) for k, v in PERIODO_ROTULO.items()],
         "periodo_txt": f"{MES[ini % 12]}/{ini // 12} – {MES[fim % 12]}/{fim // 12}",
