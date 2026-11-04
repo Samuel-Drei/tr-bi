@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ loja_nome }}{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="icon" href="{% static 'dados/logo-tr.png' %}">
+<link rel="stylesheet" href="{% static 'dados/admin-tr.css' %}">
+{% endblock %}
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}"><img src="{% static 'dados/logo-tr.png' %}" alt="">{{ loja_nome }} · Administração</a></div>
+{% endblock %}
+{% block userlinks %}<a href="{% url 'painel' %}">Voltar ao painel</a> / {{ block.super }}{% endblock %}
+{% block nav-global %}{% endblock %}

@@ -1,0 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+html,html[data-theme]{
+  --primary:#17140f;--secondary:#f5a623;--accent:#ffd166;--primary-fg:#fff;
+  --body-fg:#1f1a10;--body-bg:#f7f3ea;--body-quiet-color:#6b6455;--body-medium-color:#4a4333;
+  --header-color:#ffd166;--header-branding-color:#fff;--header-bg:#17140f;--header-link-color:#fff;
+  --breadcrumbs-fg:#1a1200;--breadcrumbs-link-fg:#1a1200;--breadcrumbs-bg:#f5a623;
+  --link-fg:#a85f00;--link-hover-color:#7a4400;--link-selected-fg:#a85f00;
+  --hairline-color:#eadfc6;--border-color:#e3d8bd;--darkened-bg:#faf5e8;--selected-bg:#fff3d9;--selected-row:#fff3d9;
+  --button-fg:#1a1200;--button-bg:#f5a623;--button-hover-bg:#ffd166;
+  --default-button-bg:#f5a623;--default-button-hover-bg:#ffd166;
+  --close-button-bg:#6b6455;--close-button-hover-bg:#4a4333;
+  --object-tools-fg:#fff;--object-tools-bg:#6b6455;--object-tools-hover-bg:#f5a623;
+  --module-bg:#fff;--module-fg:#1a1200;--module-header-bg:#f5a623;
+  color-scheme:light;
+}
+body{font-family:Inter,system-ui,sans-serif;background:var(--body-bg)}
+#header{padding:12px 24px}
+#site-name a{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;color:#fff}
+#site-name img{width:32px;height:32px;object-fit:contain}
+.theme-toggle{display:none}
+.module{border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(60,40,0,.08);border:0}
+.module h2,.module caption,.inline-group h2{background:#f5a623;color:#1a1200;font-weight:600}
+.module h2 a,.module caption a{color:#1a1200}
+#content{padding:20px 24px}
+.button,input[type=submit],input[type=button],.submit-row input,a.button{border-radius:9px;font-weight:600}
+.button.default,input[type=submit].default,.submit-row input.default{color:#1a1200}
+input[type=text],input[type=password],input[type=email],input[type=number],input[type=search],input[type=url],select,textarea{border-radius:8px}
+@media(max-width:767px){
+  #header{padding:10px 14px}
+  #content{padding:14px}
+  #site-name a{font-size:15px}
+}

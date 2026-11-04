@@ -1,9 +1,11 @@
+import csv
 from collections import defaultdict
 from datetime import date, datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from .models import (EstoqueSnapshot, Importacao, NotaVenda, Veiculo, VendaCanal,
@@ -14,6 +16,7 @@ MES_LONGO = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho"
              "agosto", "setembro", "outubro", "novembro", "dezembro"]
 CORES = ["#f5a623", "#1f2937", "#16c79a", "#fb7185", "#c9bfa5"]
 PERIODOS = {"mes": 1, "3m": 3, "6m": 6, "ano": 0}
+PERIODO_CURTO = {"mes": "Mês", "3m": "3 meses", "6m": "6 meses", "ano": "Ano"}
 PERIODO_ROTULO = {"mes": "Mês atual", "3m": "Últimos 3 meses", "6m": "Últimos 6 meses", "ano": "Ano todo"}
 
 
@@ -124,6 +127,7 @@ def painel(request):
             "ano": sum(d.values()),
         })
     vend_rows.sort(key=lambda r: (-r["atual"], -r["ano"]))
+    vend_todos = list(vend_rows)
     vend_rows = vend_rows[:4]
 
     # composição (donut) -----------------------------------------------------------------------
@@ -176,13 +180,38 @@ def painel(request):
         d = k.get("delta")
         if d is not None:
             k["abs"], k["seta"], k["bom"] = abs(d), ("↑" if d >= 0 else "↓"), (d >= 0) == k["sobe_bom"]
+    if request.GET.get("csv"):
+        num = lambda v: f"{float(v):.2f}".replace(".", ",")
+        resp = HttpResponse(content_type="text/csv; charset=utf-8")
+        resp["Content-Disposition"] = f'attachment; filename="resumo-{p}.csv"'
+        resp.write("﻿")
+        w = csv.writer(resp, delimiter=";")
+        w.writerow(["Período", f"{MES[ini % 12]}/{ini // 12} a {MES[fim % 12]}/{fim // 12}"])
+        w.writerow(["Comparado com", f"{MES[ini_ant % 12]}/{ini_ant // 12} a {MES[fim_ant % 12]}/{fim_ant // 12}"])
+        w.writerow([])
+        w.writerow(["Indicador", "Período", "Período anterior"])
+        w.writerow(["Faturamento (com NF)", num(atual["venda"]), num(anterior["venda"])])
+        w.writerow(["Custo dos veículos", num(atual["compra"]), num(anterior["compra"])])
+        w.writerow(["Impostos", num(atual["impostos"]), num(anterior["impostos"])])
+        w.writerow(["Lucro bruto", num(atual["lucro"]), num(anterior["lucro"])])
+        w.writerow(["Vendas com nota fiscal", atual["n"], anterior["n"]])
+        w.writerow(["Vendas (relatório por vendedor)", total_p, total_ant])
+        w.writerow(["Estoque atual (custo)", num(custo_est), ""])
+        w.writerow(["Veículos em estoque", n_est, ""])
+        w.writerow([])
+        w.writerow(["Vendedor", "Vendas no período", "Variação", "Participação %"])
+        for r in vend_todos:
+            w.writerow([r["nome"], r["atual"], r["delta"], r["part"]])
+        return resp
+
     imp = Importacao.objects.order_by("-criado_em").first()
     hora = datetime.now().hour
     ctx = {
         "ativo": "painel", "alertas": len(parados) or None,
         "saudacao": "Bom dia" if hora < 12 else "Boa tarde" if hora < 18 else "Boa noite",
-        "periodo": p, "periodos": [(k, v) for k, v in PERIODO_ROTULO.items()],
-        "periodo_txt": f"{MES[ini % 12]}/{ini // 12} – {MES[fim % 12]}/{fim // 12}",
+        "periodo": p, "periodos": list(PERIODO_CURTO.items()),
+        "periodo_txt": f"{MES[ini % 12]}/{ini // 12} – {MES[fim % 12]}/{fim // 12}" if ini != fim else f"{MES[ini % 12]}/{ini // 12}",
+        "periodo_ant_txt": f"{MES[ini_ant % 12]}/{ini_ant // 12} – {MES[fim_ant % 12]}/{fim_ant // 12}" if ini_ant != fim_ant else f"{MES[ini_ant % 12]}/{ini_ant // 12}",
         "kpis": kpis,
         "grafico": {"labels": rot, "receita": [float(mensal[m]["venda"]) for m in serie_meses],
                     "custo": [float(mensal[m]["compra"]) for m in serie_meses],

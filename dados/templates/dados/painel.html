@@ -10,15 +10,14 @@
       </div>
       <div class="sp"></div>
       <div class="tools">
-        <form class="datebtn" method="get">
-          <i data-lucide="calendar" style="width:16px;height:16px"></i>
-          <select name="p" onchange="this.form.submit()">
-            {% for k, v in periodos %}<option value="{{ k }}"{% if k == periodo %} selected{% endif %}>{{ v }} · {% if k == periodo %}{{ periodo_txt }}{% else %}…{% endif %}</option>{% endfor %}
-          </select>
-        </form>
-        <span class="ibtn"><i data-lucide="download" style="width:18px;height:18px"></i></span>
-        <span class="ibtn"><i data-lucide="share-2" style="width:18px;height:18px"></i></span>
-        <span class="ibtn"><i data-lucide="chart-no-axes-combined" style="width:18px;height:18px"></i></span>
+        <div class="periodo">
+          <div class="seg seg-p" role="tablist" aria-label="Período">
+            {% for k, v in periodos %}<a href="?p={{ k }}" class="{% if k == periodo %}on{% endif %}">{{ v }}</a>{% endfor %}
+          </div>
+          <div class="pinfo"><b>{{ periodo_txt }}</b> · comparado com {{ periodo_ant_txt }}</div>
+        </div>
+        <a class="ibtn" id="btn-baixar" href="?p={{ periodo }}&csv=1" title="Baixar resumo (CSV)" aria-label="Baixar resumo"><i data-lucide="download" style="width:18px;height:18px"></i></a>
+        <button class="ibtn" id="btn-compartilhar" type="button" title="Compartilhar link" aria-label="Compartilhar"><i data-lucide="share-2" style="width:18px;height:18px"></i></button>
       </div>
     </section>
 
@@ -44,9 +43,9 @@
       <article class="card">
         <div class="rowh">
           <div><h3>Visão geral financeira</h3>
-            <div class="sub">Receita vs custo das vendas com nota fiscal (por mês)</div></div>
+            <div class="sub">Receita vs custo por mês, das vendas com nota fiscal. Não depende do período acima.</div></div>
           <div class="sp"></div>
-          <div class="seg" id="seg"><button class="on" data-n="6">6M</button><button data-n="12">1A</button><button data-n="99">Tudo</button></div>
+          <div class="seg" id="seg" title="Quantos meses o gráfico mostra"><button class="on" data-n="6">6 meses</button><button data-n="12">12 meses</button><button data-n="99">Tudo</button></div>
         </div>
         <div class="legend"><span><i style="background:#f5a623"></i>Receita</span><span><i style="background:#1f2937"></i>Custo</span></div>
         <div id="chart"></div>
@@ -139,6 +138,14 @@ document.querySelectorAll('svg[data-serie]').forEach(spark);
 /* anel da nota de saúde */
 (function(){const c=2*Math.PI*56,s={{ saude.score }}/100,a=document.getElementById('arc');
   a.setAttribute('stroke-dasharray',`${c*s} ${c}`);})();
+
+/* compartilhar */
+document.getElementById('btn-compartilhar').onclick=async()=>{
+  const url=location.origin+location.pathname+'?p={{ periodo }}';
+  try{ if(navigator.share){await navigator.share({title:document.title,url});return;} }catch(e){ if(e.name==='AbortError')return; }
+  try{ await navigator.clipboard.writeText(url); aviso('Link copiado'); }catch(e){ prompt('Copie o link:',url); }
+};
+function aviso(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
 
 /* gráfico de área: receita x custo */
 const G=JSON.parse(document.getElementById('d-grafico').textContent);

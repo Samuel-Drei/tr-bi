@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 </head>
 <body>
+<div id="nav-bar"></div>
 <div class="app">
 
   <aside class="side" id="side">
@@ -48,7 +49,19 @@
       <form class="search" action="{% url 'buscar' %}" method="get"><i data-lucide="search" style="width:16px;height:16px"></i>
         <input name="q" value="{{ q_busca|default:'' }}" placeholder="Buscar placa, modelo, cliente ou vendedor…"></form>
       <div class="sp"></div>
-      <a class="bell" href="{% url 'estoque' %}?faixa=parado" title="{% if alertas %}{{ alertas }} veículo(s) parado(s) há mais de 90 dias{% else %}Sem alertas{% endif %}"><i data-lucide="bell" style="width:20px;height:20px"></i>{% if alertas %}<i>{{ alertas }}</i>{% endif %}</a>
+      <div class="notif" id="notif">
+        <button class="bell" type="button" id="bell" aria-haspopup="true" aria-expanded="false" aria-label="Notificações"><i data-lucide="bell" style="width:20px;height:20px"></i>{% if alertas %}<i>{{ alertas }}</i>{% endif %}</button>
+        <div class="notif-pop" id="notif-pop" role="menu">
+          <div class="notif-h"><b>Notificações</b>{% if alertas %}<span>{{ alertas }}</span>{% endif %}</div>
+          {% if alertas %}
+          <p class="notif-t">Veículos parados há mais de 90 dias</p>
+          {% for a in alertas_itens %}<a class="notif-i" href="{% url 'estoque' %}?faixa=parado&q={{ a.placa }}"><span class="ico red"><i data-lucide="car" style="width:15px;height:15px"></i></span><div><b>{{ a.modelo }}</b><small>{{ a.placa }}</small></div><em>{{ a.dias }} dias</em></a>{% endfor %}
+          <a class="notif-v" href="{% url 'estoque' %}?faixa=parado">Ver todos os {{ alertas }} →</a>
+          {% else %}
+          <div class="notif-vazio"><i data-lucide="check-circle-2" style="width:26px;height:26px"></i>Tudo em dia. Nenhum alerta no momento.</div>
+          {% endif %}
+        </div>
+      </div>
       <div class="user"><img class="avatar" src="{% static 'dados/logo-tr.png' %}" alt="">
         <div><b>{{ loja_nome }}</b><small>{{ loja_local }}</small></div></div>
       <form method="post" action="{% url 'logout' %}" style="margin-left:6px">{% csrf_token %}
@@ -59,7 +72,35 @@
     {% block conteudo %}{% endblock %}
   </div>
 </div>
-<script>lucide.createIcons();</script>
+<script>lucide.createIcons();
+(function(){
+  var bar=document.getElementById('nav-bar'),main=document.querySelector('.main'),side=document.getElementById('side');
+  function reset(){bar.className='';bar.style.width='0';main.classList.remove('carregando');
+    document.querySelectorAll('.side nav a.carregando').forEach(function(a){a.classList.remove('carregando')});}
+  window.addEventListener('pageshow',reset);
+  var nb=document.getElementById('bell'),np=document.getElementById('notif');
+  function fecha(){np.classList.remove('open');nb.setAttribute('aria-expanded','false');}
+  nb.addEventListener('click',function(e){e.stopPropagation();var o=np.classList.toggle('open');nb.setAttribute('aria-expanded',o);});
+  document.addEventListener('pointerdown',function(e){if(!np.contains(e.target))fecha();});
+  document.addEventListener('touchstart',function(e){if(!np.contains(e.target))fecha();},{passive:true});
+  window.addEventListener('scroll',function(){if(np.classList.contains('open'))fecha();},{passive:true});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')fecha();});
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href]');
+    if(!a||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||a.target==='_blank'||a.hasAttribute('download'))return;
+    var u=new URL(a.href,location.href);
+    if(u.origin!==location.origin||u.search.indexOf('csv=1')>-1||(u.pathname===location.pathname&&u.search===location.search))return;
+    if(a.closest('.side nav')){
+      document.querySelectorAll('.side nav a.on').forEach(function(x){x.classList.remove('on')});
+      a.classList.add('on','carregando');
+    }
+    side.classList.remove('open');
+    bar.style.width='0';void bar.offsetWidth;bar.className='go';
+    main.classList.add('carregando');
+    window.scrollTo(0,0);
+  });
+})();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

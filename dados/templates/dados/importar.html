@@ -9,9 +9,12 @@
     <form method="post" enctype="multipart/form-data" style="margin-top:14px">{% csrf_token %}
       <div class="drop"><i data-lucide="file-up" style="width:30px;height:30px;color:#f5a623"></i>
         <p style="margin-top:8px">Selecione um ou mais arquivos <b>.xls, .xlsx ou .pdf</b></p>
-        <input type="file" name="arquivos" multiple accept=".xls,.xlsx,.pdf" required></div>
+        <label class="btn" style="margin-top:14px;cursor:pointer"><i data-lucide="folder-open" style="width:15px;height:15px"></i>Escolher arquivos
+          <input class="sr" id="arq" type="file" name="arquivos" multiple required
+                 accept=".xls,.xlsx,.pdf,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+        <p id="arq-nomes" style="margin-top:10px;font-size:12.5px;color:#9a927f">Nenhum arquivo selecionado</p></div>
       <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12.5px"><input type="checkbox" name="forcar"> Reimportar mesmo que o arquivo já tenha sido enviado</label>
-      <button class="btn" style="margin-top:14px" type="submit"><i data-lucide="upload" style="width:15px;height:15px"></i>Importar</button>
+      <button class="btn" id="enviar" style="margin-top:14px" type="submit"><i data-lucide="upload" style="width:15px;height:15px"></i>Importar</button>
     </form>
     {% if resultados %}<div style="margin-top:18px"><h3 style="margin-bottom:6px">Resultado</h3>
       {% for r in resultados %}<div class="res"><span class="{{ r.cls }}">{{ r.icone }}</span><div><b>{{ r.arquivo }}</b><br><small style="color:#9a927f">{{ r.msg }}</small></div></div>{% endfor %}</div>{% endif %}
@@ -35,3 +38,9 @@
   </tbody></table>
 </article>
 {% endblock %}
+{% block scripts %}<script>
+var arq=document.getElementById('arq'),nomes=document.getElementById('arq-nomes');
+arq.addEventListener('change',function(){var n=[].map.call(arq.files,function(f){return f.name});
+  nomes.textContent=n.length?n.join(' · '):'Nenhum arquivo selecionado';nomes.style.color=n.length?'#1a1200':'#9a927f'});
+arq.form.addEventListener('submit',function(){var b=document.getElementById('enviar');b.disabled=true;b.style.opacity='.7';b.lastChild.textContent='Enviando…'});
+</script>{% endblock %}

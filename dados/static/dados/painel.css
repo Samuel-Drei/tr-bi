@@ -12,7 +12,7 @@ a{color:inherit;text-decoration:none}
 /* sidebar */
 .side{background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);color:#d9d3c4;padding:22px 14px 18px;display:flex;flex-direction:column;position:relative}
 .brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
-.brand .logo{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.brand .logo{width:38px;height:38px;object-fit:contain}
 .brand b{font-size:19px;color:#fff;font-weight:600;letter-spacing:-.2px}
 .brand .col{margin-left:auto;opacity:.6}
 .side nav a{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:11px;margin-bottom:3px;color:#c9c2b0;font-size:13px}
@@ -35,10 +35,10 @@ a{color:inherit;text-decoration:none}
 .search input{border:0;background:none;outline:0;flex:1;font:inherit;color:var(--ink)}
 .search kbd{font:inherit;font-size:11px;color:var(--muted)}
 .top .sp{flex:1}
-.bell{position:relative;color:#5a6384;display:inline-block}
-.bell i{position:absolute;right:-5px;top:-6px;background:var(--red);color:#fff;font-style:normal;font-size:9px;border-radius:50%;width:15px;height:15px;display:grid;place-items:center}
+.bell{position:relative;color:#5a6384;display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:12px;background:none;cursor:pointer;transition:background .15s}.bell:hover,.notif.open .bell{background:#f4efe3}
+.bell i{position:absolute;right:3px;top:2px;background:var(--red);color:#fff;font-style:normal;font-size:9px;border-radius:50%;width:15px;height:15px;display:grid;place-items:center}
 .user{display:flex;align-items:center;gap:10px}
-.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;background:#000}
+.avatar{width:36px;height:36px;object-fit:contain}
 .user b{display:block;font-size:12.5px}
 .user small{color:var(--muted);font-size:11px}
 
@@ -46,7 +46,7 @@ a{color:inherit;text-decoration:none}
 .hello{display:flex;align-items:flex-end;gap:16px;margin-bottom:20px}
 .hello small{display:block;font-size:12.5px;margin-bottom:4px}
 .hello .saud{display:flex;align-items:center;gap:7px;font-weight:500}
-.hello .saud img{width:22px;height:22px;border-radius:6px}
+.hello .saud img{width:24px;height:24px;object-fit:contain}
 .hello h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
 .hello p{color:var(--muted);font-size:12.5px}
 .hello .sp{flex:1}
@@ -197,4 +197,113 @@ td .sp2{width:72px;height:24px}
   .search{display:flex!important;flex:1}
   .top{padding:12px 14px}.main{padding:0 14px 18px}.top{margin:0 -14px 16px}
   .user div{display:none}
+}
+
+/* ---- refinamento mobile ---- */
+@media(max-width:820px){
+  .top{gap:10px;padding:10px 14px}
+  .search{min-width:0;padding:9px 14px}
+  .search input{min-width:0;width:100%}
+  .user{display:none}
+  .top form[action*="sair"]{margin-left:0!important}
+  .hello{gap:12px;margin-bottom:14px}
+  .hello h1{font-size:20px;line-height:1.2}
+  .hello p{display:none}
+  .hello>div{min-width:0}
+  .hello .sp{display:none}
+  .tools{width:100%}
+  .tools .ibtn{display:none}
+  .datebtn{min-width:0;width:100%}
+  .grid{gap:12px;margin-bottom:12px}
+  .g4{grid-template-columns:1fr 1fr}
+  .card{padding:14px 15px}
+  .kpi .head{font-size:11.5px;gap:8px;margin-bottom:8px}
+  .kpi .dots,.kpi .spark{display:none}
+  .kpi .val{font-size:18px;margin-bottom:8px}
+  .kpi .foot{flex-wrap:wrap;gap:4px 8px}
+  .kpi .foot span{font-size:10px}
+  .mk{grid-template-columns:1fr 1fr;gap:10px}
+  .mk b{font-size:17px}
+  .filtros>*{flex:1 1 140px;min-width:0}
+  .filtros input[type=search]{min-width:0}
+  .pag{flex-wrap:wrap}
+}
+@media(max-width:820px){
+  .top .sp{display:none}
+  .top .ibtn{box-shadow:none;width:38px;height:38px;background:#f4efe3}
+  .top .bell{margin-left:auto}
+}
+
+/* ---- transição entre páginas ---- */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:.14s ease both vt-out}
+::view-transition-new(root){animation:.22s ease both vt-in}
+@keyframes vt-out{to{opacity:0}}
+@keyframes vt-in{from{opacity:0;transform:translateY(6px)}}
+.main>*:not(.top){animation:entra .28s ease both}
+@keyframes entra{from{opacity:0;transform:translateY(8px)}}
+#nav-bar{position:fixed;left:0;top:0;height:3px;width:0;background:linear-gradient(90deg,#f5a623,#ffd166);z-index:99;opacity:0;pointer-events:none}
+#nav-bar.go{opacity:1;width:85%;transition:width 6s cubic-bezier(.1,.7,.2,1)}
+.main.carregando>*:not(.top){opacity:.45;transition:opacity .15s;pointer-events:none}
+.side nav a{transition:background .15s,color .15s,transform .1s}
+.side nav a:active{transform:scale(.97)}
+.side nav a.carregando{opacity:.8}
+.side nav a.carregando svg{animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+  .main>*:not(.top){animation:none}
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+  .side nav a.carregando svg{animation:none}
+}
+@media(max-width:820px){
+  .tabela table{min-width:560px}
+  .side.open~.main{pointer-events:none}
+}
+.sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+.btn:has(.sr:focus-visible){outline:2px solid #1a1200;outline-offset:2px}
+.btn{position:relative}
+
+/* período e ações do cabeçalho */
+.periodo{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.seg-p{background:#fff;padding:4px;border-radius:12px;box-shadow:var(--shadow);gap:2px}
+.seg-p a{padding:8px 14px;border-radius:9px;font-size:12.5px;font-weight:500;color:#59627f;transition:background .15s}
+.seg-p a:hover{background:#faf3e1}
+.seg-p a.on{background:var(--indigo);color:#1a1200;font-weight:600}
+.pinfo{font-size:11.5px;color:var(--muted)}.pinfo b{color:var(--ink);font-weight:600}
+.tools{align-items:flex-start}
+a.ibtn,button.ibtn{cursor:pointer;border:0;transition:transform .1s,background .15s}
+a.ibtn:hover,button.ibtn:hover{background:#fff6e0}
+a.ibtn:active,button.ibtn:active{transform:scale(.94)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17140f;color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;z-index:120;box-shadow:0 6px 20px rgba(0,0,0,.25);animation:entra .2s ease both}
+@media(max-width:820px){
+  .tools{flex-wrap:wrap;gap:10px}
+  .periodo{flex:1 1 100%;order:1;align-items:stretch}
+  .seg-p{display:flex}.seg-p a{flex:1;text-align:center;padding:9px 4px}
+  .tools .ibtn{display:grid!important;order:2}
+  .pinfo{text-align:center}
+}
+
+/* painel de notificações */
+.notif{position:relative}
+.notif-pop{position:absolute;right:0;top:calc(100% + 10px);width:330px;background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(60,40,0,.18),0 0 0 1px var(--line);padding:8px;z-index:60;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.98);transform-origin:top right;transition:opacity .15s,transform .15s,visibility .15s}
+.notif.open .notif-pop{opacity:1;visibility:visible;transform:none}
+.notif-h{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;font-size:14px}
+.notif-h span{background:var(--red);color:#fff;font-size:10.5px;font-weight:600;border-radius:999px;padding:2px 8px}
+.notif-t{font-size:11.5px;color:var(--muted);padding:0 12px 8px}
+.notif-i{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:11px;color:var(--ink)}
+.notif-i:hover{background:#fdf8ec}
+.notif-i div{flex:1;min-width:0}.notif-i b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-i small{color:var(--muted);font-size:11px}.notif-i em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--red)}
+.notif-v{display:block;text-align:center;margin-top:4px;padding:11px;border-radius:11px;background:#fff6e0;color:#8a5200;font-weight:600;font-size:12.5px}
+.notif-v:hover{background:#ffedc2}
+.notif-vazio{display:grid;justify-items:center;gap:8px;padding:26px 16px;color:var(--muted);font-size:12.5px;text-align:center}
+.notif-vazio svg{color:#16c79a}
+@media(max-width:820px){
+  .notif{position:static}
+  .notif-pop{position:fixed;left:12px;right:12px;top:66px;width:auto}
+}
+@media(max-width:820px){
+  .rowh:has(#seg){flex-wrap:wrap;gap:10px}
+  .rowh:has(#seg) .sp{display:none}
+  #seg{width:100%}#seg button{flex:1}
 }
