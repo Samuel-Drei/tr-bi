@@ -106,7 +106,7 @@ if _db_url:
             "PASSWORD": urllib.parse.unquote(_u.password or ""),
             "HOST": _u.hostname,
             "PORT": _u.port or 5432,
-            "OPTIONS": {"sslmode": "require"},
+            "OPTIONS": {"sslmode": urllib.parse.parse_qs(_u.query).get("sslmode", ["require"])[0]},
             "DISABLE_SERVER_SIDE_CURSORS": True,  # compatível com pooler (pgbouncer/Neon)
         }
     }

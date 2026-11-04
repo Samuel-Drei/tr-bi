@@ -1,0 +1,48 @@
+# VPS com Docker: web (Django) + Postgres + Caddy (HTTPS automático).
+# Uso: copie .env.example para .env, preencha e rode `docker compose up -d --build`.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: painel
+      POSTGRES_USER: painel
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U painel"]
+      interval: 10s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://painel:${POSTGRES_PASSWORD}@db:5432/painel?sslmode=disable
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS: ${DOMINIO}
+      DJANGO_CSRF_ORIGINS: https://${DOMINIO}
+      LOJA_NOME: ${LOJA_NOME:-TR Motors}
+      LOJA_LOCAL: ${LOJA_LOCAL:-Primavera do Leste · MT}
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME:-admin}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      SEED_DEMO: ${SEED_DEMO:-0}
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [web]
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMINIO: ${DOMINIO}
+    command: caddy reverse-proxy --from ${DOMINIO} --to web:8000
+    volumes:
+      - caddy_data:/data
+
+volumes:
+  pgdata:
+  caddy_data:

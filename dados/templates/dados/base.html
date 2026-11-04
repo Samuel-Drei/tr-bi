@@ -48,7 +48,7 @@
       <form class="search" action="{% url 'buscar' %}" method="get"><i data-lucide="search" style="width:16px;height:16px"></i>
         <input name="q" value="{{ q_busca|default:'' }}" placeholder="Buscar placa, modelo, cliente ou vendedor…"></form>
       <div class="sp"></div>
-      <span class="bell"><i data-lucide="bell" style="width:20px;height:20px"></i>{% if alertas %}<i>{{ alertas }}</i>{% endif %}</span>
+      <a class="bell" href="{% url 'estoque' %}?faixa=parado" title="{% if alertas %}{{ alertas }} veículo(s) parado(s) há mais de 90 dias{% else %}Sem alertas{% endif %}"><i data-lucide="bell" style="width:20px;height:20px"></i>{% if alertas %}<i>{{ alertas }}</i>{% endif %}</a>
       <div class="user"><img class="avatar" src="{% static 'dados/logo-tr.png' %}" alt="">
         <div><b>{{ loja_nome }}</b><small>{{ loja_local }}</small></div></div>
       <form method="post" action="{% url 'logout' %}" style="margin-left:6px">{% csrf_token %}
