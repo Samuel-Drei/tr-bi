@@ -2,8 +2,6 @@
 
 Painel gerencial (BI) para revendas de veículos, alimentado pelos relatórios que o ERP **Revenda Mais** já exporta. Transforma planilhas e PDFs soltos em vendas, estoque, margem e impostos num só lugar, com filtros e exportação.
 
-**[Demo ao vivo](#)** *(loja fictícia)* · Python · Django · PostgreSQL
-
 ![Visão geral do painel](docs/painel.png)
 
 ---
